@@ -16,7 +16,7 @@ Compile and put the resulting executable file alongside a folder called */assets
 >  * /etc/
 >    * something.etc
 >
->**Files names must be unique and alphanumeric!**
+>**Filenames must be unique and alphanumeric!**
 	
 >The only required folder name is assets, all the other ones are there just for classification purposes. You must have at least one folder inside */assets/*.
 
