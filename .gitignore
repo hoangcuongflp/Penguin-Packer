@@ -1,0 +1,17 @@
+﻿*.exe
+*.ilk
+*.pdb
+*.obj
+*.suo
+*.sdf
+*.opensdf
+*.idb
+*.map
+*.vs
+*.sln
+*.bat
+*.pepa
+*.pepra
+*.pepi
+assets
+.vscode
