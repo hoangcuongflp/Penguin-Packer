@@ -12,7 +12,6 @@ Compile and put the resulting executable file alongside a folder called */assets
 >    * blob.png
 >  * /texts/
 >    * 1984.txt
->    * bestcookierecipes.txt
 >  * /etc/
 >    * something.etc
 >
