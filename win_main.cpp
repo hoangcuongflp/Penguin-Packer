@@ -37,6 +37,7 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 			assetTypes.insert(assetTypes.end(), {""});
 			
 			_string = _findData.cFileName;
+			_string.erase(std::remove(_string.begin(), _string.end(), ' '), _string.end());
 			assetTypes[assetTypes.size() - 1].name = _string;
 			
 			_string = "assets\\";
@@ -77,6 +78,7 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 				
 				_string = _findData.cFileName;
 				_string = _string.substr(0, _string.find("."));
+				_string.erase(std::remove(_string.begin(), _string.end(), ' '), _string.end());
 				assets[assets.size() - 1].name = _string;
 				
 				assets[assets.size() - 1].type = assetTypes[i];

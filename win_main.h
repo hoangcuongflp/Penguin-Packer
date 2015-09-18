@@ -3,12 +3,12 @@ MOTHER OF ALL TO-DOs
 
 - General
 	- TODO-9(ZET): Add error messages and argument support
-	- TODO-7(ZET): Remove whitespaces from filenames
 */
 
 #pragma once
 
 #include <windows.h>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <vector>
