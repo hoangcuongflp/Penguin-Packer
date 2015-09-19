@@ -2,63 +2,103 @@
 
 #include "win_main.h"
 
-int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
+int main(int argc, char* argv[])
 {
 	uint64					assetFileCount = 0;
 	
 	std::vector<Asset>		assets;
 	std::vector<AssetType>	assetTypes;
-	
-	std::string				_string;
-	std::string				_line;
-	HANDLE					_find;
-	WIN32_FIND_DATA 		_findData;
-	
-	std::ofstream			_fileOutputStream;
-	std::ifstream			_fileInputStream;
+	char					assetsPath[512];
+	char					assetsPackFileName[256];
+	char					assetsPackFileExtension[16];
 	
 	uint64					assetInfoFileSize = 0;
 	uint64 					lastAssetPosition = 0;
 	
+	std::string*			_line = new std::string();
+	char					_string[1024];
+	char					_assetFileCount[32];
+	HANDLE					_find;
+	WIN32_FIND_DATA 		_findData;
+	
+	char					_type[512];
+	char					_name[512];
+	uint64					_position = 0;
+	uint64					_size = 0;
+	
+	std::ofstream*			_fileOutputStream = new std::ofstream();
+	std::ifstream*			_fileInputStream = new std::ifstream();
+	
+	
+	printf("Penguin Packer v0.2 by Jose Carlos Candido (@Zetsaika)\n");
+	printf("- Usage: penguinpacker {asset folder location} {outfile name} {outfile extension}\n\n");
+	
+	if(argc < 4)
+	{
+		printf("Not all arguments were detected, using defaults.\n\n");
+		
+		strcpy(assetsPath, "assets");
+		strcpy(assetsPackFileName, "assets");
+		strcpy(assetsPackFileExtension, "pepa");
+	}
+	else
+	{
+		strcpy(assetsPath, argv[1]);
+		strcpy(assetsPackFileName, argv[2]);
+		strcpy(assetsPackFileExtension, argv[3]);
+	}
+	
+	
+	if(!PathFileExists(assetsPath))
+	{
+		printf("ERROR: Specified asset folder found!\n");
+		return 0;
+	}
 	
 	SecureZeroMemory(&_findData, sizeof(WIN32_FIND_DATA));
 	
-	_find = FindFirstFile("assets\\*", &_findData);
-	
-	if(_find == INVALID_HANDLE_VALUE)
-	{
-		return 0;
-	}
+	strcpy(_string, assetsPath);
+	strcat(_string, "\\*");
+	_find = FindFirstFile(_string, &_findData);
 	
 	while(FindNextFile(_find, &_findData) != 0)
 	{
 		if(_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			assetTypes.insert(assetTypes.end(), {""});
+			if(strcmp(_findData.cFileName, "..") == 0)
+			{
+				continue;
+			}
 			
-			_string = _findData.cFileName;
-			_string.erase(std::remove(_string.begin(), _string.end(), ' '), _string.end());
-			assetTypes[assetTypes.size() - 1].name = _string;
+			assetTypes.push_back({0});
 			
-			_string = "assets\\";
-			_string += _findData.cFileName;
-			_string += "\\*";
-			assetTypes[assetTypes.size() - 1].path = _string;
+			strcpy(assetTypes[assetTypes.size() - 1].name, _findData.cFileName);
+			
+			strcpy(assetTypes[assetTypes.size() - 1].path , assetsPath);
+			strcat(assetTypes[assetTypes.size() - 1].path, "\\");
+			strcat(assetTypes[assetTypes.size() - 1].path, _findData.cFileName);
+			strcat(assetTypes[assetTypes.size() - 1].path, "\\*");
 		}
 	}
 	
-	assetTypes.erase(assetTypes.begin());
-	
 	if(assetTypes.size() <= 0)
 	{
+		printf("ERROR: No folder inside %s found!\n", assetsPath);
 		return 0;
 	}
 	
 	for(uint64 i = 0; i < assetTypes.size(); ++i)
 	{
-		_find = FindFirstFile(assetTypes[i].path.c_str(), &_findData);
+		_find = FindFirstFile(assetTypes[i].path, &_findData);
 		
-		assetTypes[i].path.pop_back();
+		for(uint64 j = 0; j < sizeof(assetTypes[i].path); ++j)
+		{
+			if(memcmp(&assetTypes[i].path[j], "*", 1) == 0)
+			{
+				memcpy(&assetTypes[i].path[j], "\0", 1);
+				break;
+			}
+		}
 	
 		if(_find == INVALID_HANDLE_VALUE)
 		{
@@ -69,22 +109,28 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 		{
 			if(!(_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
-				assets.insert(assets.end(), {0});
+				assets.push_back({0});
 				
 				assets[assets.size() - 1].size = (_findData.nFileSizeHigh * ((uint64)MAXDWORD + 1)) +
 													_findData.nFileSizeLow;
 													
 				assets[assets.size() - 1].position = lastAssetPosition;
 				
-				_string = _findData.cFileName;
-				_string = _string.substr(0, _string.find("."));
-				_string.erase(std::remove(_string.begin(), _string.end(), ' '), _string.end());
-				assets[assets.size() - 1].name = _string;
+				strcpy(assets[assets.size() - 1].name, _findData.cFileName);
+				
+				for(uint64 j = 0; j < sizeof(assets[assets.size() - 1].name); ++j)
+				{
+					if(memcmp(&assets[assets.size() - 1].name[j], ".", 1) == 0)
+					{
+						memcpy(&assets[assets.size() - 1].name[j], "\0", 1);
+						break;
+					}
+				}
 				
 				assets[assets.size() - 1].type = assetTypes[i];
-				
-				assets[assets.size() - 1].path = assets[assets.size() - 1].type.path +
-													_findData.cFileName;
+													
+				strcpy(assets[assets.size() - 1].path, assets[assets.size() - 1].type.path);				
+				strcat(assets[assets.size() - 1].path, _findData.cFileName);
 													
 				lastAssetPosition += assets[assets.size() - 1].size + 1;
 			}
@@ -93,33 +139,33 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	
 	for(;;)
 	{
-		_string = "assets" + std::to_string(assetFileCount) + ".pepa";
+		sprintf(_assetFileCount, "%I64u", assetFileCount);
 		
-		if(PathFileExists(_string.c_str()))
+		strcpy(_string, assetsPackFileName);								
+		strcat(_string, _assetFileCount);
+		strcat(_string, ".");
+		strcat(_string, assetsPackFileExtension);
+		
+		if(PathFileExists(_string))
 		{
 			++assetFileCount;
 			
-			_fileInputStream.open(_string, std::ios::binary);
+			_fileInputStream->open(_string, std::ios::binary);
 			
-			if(_fileInputStream.is_open())
+			if(_fileInputStream->good())
 			{
-				while(std::getline(_fileInputStream, _line))
+				while(std::getline(*_fileInputStream, *_line))
 				{
-					if(_line == "")
+					if(*_line == "")
 					{
 						break;
 					}
 					
-					char _type[256] = {};
-					char _name[256] = {};
-					uint64 _position = 0;
-					uint64 _size = 0;
-					
-					sscanf(_line.c_str(), "%s | %s | %I64u | %I64u", &_type, &_name, &_position, &_size);
+					sscanf(_line->c_str(), "%s | %s | %I64u | %I64u", &_type, &_name, &_position, &_size);
 					
 					for (std::vector<Asset>::iterator it = assets.begin(); it != assets.end();)
 					{
-						if(strcmp(it->name.c_str(), _name) == 0)
+						if(strcmp(it->name, _name) == 0)
 						{
 							it = assets.erase(it);
 						}
@@ -131,7 +177,7 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 				}
 			}
 			
-			_fileInputStream.close();
+			_fileInputStream->close();
 		}
 		else{
 			break;
@@ -141,84 +187,96 @@ int CALLBACK wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 	
 	if(assets.size() == 0)
 	{
+		printf("ERROR: No new files found!\n");
 		return 0;
 	}
 	
-	_fileOutputStream.open("assets" + std::to_string(assetFileCount) + ".pepra", std::ios::binary);
+	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".1", std::ios::binary);
 	
-	if(_fileOutputStream.is_open())
+	if(_fileOutputStream->good())
 	{
 		for(uint64 i = 0; i < assets.size(); ++i)
 		{
-			_fileInputStream.open(assets[i].path, std::ios::binary);
+			_fileInputStream->open(assets[i].path, std::ios::binary);
 			
-			if (_fileInputStream.is_open())
+			if (_fileInputStream->good())
 			{
-				_fileOutputStream << _fileInputStream.rdbuf();
-				
-				_fileInputStream.close();
+				*_fileOutputStream << _fileInputStream->rdbuf();
 			}
+			
+			_fileInputStream->close();
 		}
-		
-		_fileOutputStream.close();
 	}
 	
+	_fileOutputStream->close();
 	
-	_fileOutputStream.open("assets" + std::to_string(assetFileCount) + ".pepi", std::ios::binary);
 	
-	if(_fileOutputStream.is_open())
+	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".2", std::ios::binary);
+	
+	if(_fileOutputStream->good())
 	{
 		for(uint64 i = 0; i < assets.size(); ++i)
 		{
-			_fileOutputStream << assets[i].type.name;
-			_fileOutputStream << " | ";
-			_fileOutputStream << assets[i].name;
-			_fileOutputStream << " | ";
-			_fileOutputStream << assets[i].position;
-			_fileOutputStream << " | ";
-			_fileOutputStream << assets[i].size;
-			_fileOutputStream << "\n";
+			*_fileOutputStream << assets[i].type.name;
+			*_fileOutputStream << " | ";
+			*_fileOutputStream << assets[i].name;
+			*_fileOutputStream << " | ";
+			*_fileOutputStream << assets[i].position;
+			*_fileOutputStream << " | ";
+			*_fileOutputStream << assets[i].size;
+			*_fileOutputStream << "\n";
 		}
 		
-		_fileOutputStream << "\n";
+		*_fileOutputStream << "\n";
 		
-		assetInfoFileSize = (uint64)_fileOutputStream.tellp();
-	
-		_fileOutputStream.close();
+		assetInfoFileSize = (uint64)_fileOutputStream->tellp();
 	}
 	
-	_fileOutputStream.open("assets" + std::to_string(assetFileCount) + ".pepa", std::ios::binary);
+	_fileOutputStream->close();
 	
-	if(_fileOutputStream.is_open())
+	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) +
+								"." + assetsPackFileExtension);
+	
+	if(_fileOutputStream->good())
 	{
-		_fileInputStream.open("assets" + std::to_string(assetFileCount) + ".pepi", std::ios::binary);
+		_fileInputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".2", std::ios::binary);
 			
-		if(_fileInputStream.is_open())
+		if(_fileInputStream->good())
 		{
-			_fileOutputStream << _fileInputStream.rdbuf();
+			*_fileOutputStream << _fileInputStream->rdbuf();
 			
-			_fileInputStream.close();
+			_fileInputStream->close();
 		}
 		
-		_fileInputStream.open("assets" + std::to_string(assetFileCount) + ".pepra", std::ios::binary);
+		_fileInputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".1", std::ios::binary);
 			
-		if(_fileInputStream.is_open())
+		if(_fileInputStream->good())
 		{
-			_fileOutputStream << _fileInputStream.rdbuf();
+			*_fileOutputStream << _fileInputStream->rdbuf();
 			
-			_fileInputStream.close();
+			_fileInputStream->close();
 		}
 		
-		_fileOutputStream << "\n";
-		_fileOutputStream << assetInfoFileSize;
-		
-		_fileOutputStream.close();
+		*_fileOutputStream << "\n";
+		*_fileOutputStream << assetInfoFileSize;
 	}
 	
-	_string = "assets" + std::to_string(assetFileCount) + ".pepra";
-	DeleteFile(_string.c_str());
-	_string = "assets" + std::to_string(assetFileCount) + ".pepi";
-	DeleteFile(_string.c_str());
+	_fileOutputStream->close();
+	
+	sprintf(_assetFileCount, "%I64u", assetFileCount);
+	strcpy(_string, assetsPackFileName);
+	strcat(_string, _assetFileCount);
+	strcat(_string, ".1");
+	
+	DeleteFile(_string);
+	
+	sprintf(_assetFileCount, "%I64u", assetFileCount);
+	strcpy(_string, assetsPackFileName);
+	strcat(_string, _assetFileCount);
+	strcat(_string, ".2");
+	
+	DeleteFile(_string);
+	
 	
     return 0;
 }
