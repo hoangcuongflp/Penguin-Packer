@@ -1,6 +1,5 @@
 /*
 MOTHER OF ALL TO-DOs
-- TODO-9(ZET): Address repeated filenames
 - TODO-9(ZET): Save file extensions
 */
 
