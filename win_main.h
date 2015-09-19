@@ -1,17 +1,17 @@
 /*
 MOTHER OF ALL TO-DOs
 - TODO-9(ZET): Address repeated filenames
+- TODO-9(ZET): Add argument check for output file destination
 */
 
 #pragma once
 
 #include <windows.h>
+#include <io.h>
 #include <fstream>
 #include <vector>
-#include "Shlwapi.h"
 
 typedef uint64_t uint64;
-
 
 struct AssetType
 {
@@ -29,3 +29,24 @@ struct Asset
 	
 	AssetType	type;
 };
+
+int PathOrFileExists(char* path_, bool isFolder_)
+{
+	if(path_[0] != '\0')
+	{
+		if(_access(path_, 0) == 0)
+		{
+			struct stat status;
+			
+			stat(path_, &status);
+			
+			if((isFolder_ && (status.st_mode & S_IFDIR)) || !(status.st_mode & S_IFDIR))
+			{
+				return true;
+			}
+			
+		}
+	}
+
+	return false;
+}

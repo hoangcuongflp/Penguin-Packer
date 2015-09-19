@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	if(!PathFileExists(assetsPath))
+	if(!PathOrFileExists(assetsPath, true))
 	{
 		printf("ERROR: Specified asset folder found!\n");
 		return 0;
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
 		strcat(_string, ".");
 		strcat(_string, assetsPackFileExtension);
 		
-		if(PathFileExists(_string))
+		if(PathOrFileExists(_string, false))
 		{
 			++assetFileCount;
 			
