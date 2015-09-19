@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	std::ifstream*			_fileInputStream = new std::ifstream();
 	
 	
-	printf("Penguin Packer v0.2 by Jose Carlos Candido (@Zetsaika)\n");
+	printf("Penguin Packer v0.1 by Jose Carlos Candido (@Zetsaika)\n");
 	printf("- Usage: penguinpacker {asset folder location} {outfile name} {outfile extension}\n\n");
 	
 	if(argc < 4)
