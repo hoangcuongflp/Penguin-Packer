@@ -5,6 +5,7 @@
 int main(int argc, char* argv[])
 {
 	uint64					assetFileCount = 0;
+	char					assetFileCountString[32];
 	
 	std::vector<Asset>		assets;
 	std::vector<AssetType>	assetTypes;
@@ -15,9 +16,7 @@ int main(int argc, char* argv[])
 	uint64					assetInfoFileSize = 0;
 	uint64 					lastAssetPosition = 0;
 	
-	std::string*			_line = new std::string();
 	char					_string[1024];
-	char					_assetFileCount[32];
 	HANDLE					_find;
 	WIN32_FIND_DATA 		_findData;
 	
@@ -47,7 +46,6 @@ int main(int argc, char* argv[])
 		strcpy(assetsPackFileName, argv[2]);
 		strcpy(assetsPackFileExtension, argv[3]);
 	}
-	
 	
 	if(!PathFileExists(assetsPath))
 	{
@@ -139,10 +137,10 @@ int main(int argc, char* argv[])
 	
 	for(;;)
 	{
-		sprintf(_assetFileCount, "%I64u", assetFileCount);
+		sprintf(assetFileCountString, "%I64u", assetFileCount);
 		
 		strcpy(_string, assetsPackFileName);								
-		strcat(_string, _assetFileCount);
+		strcat(_string, assetFileCountString);
 		strcat(_string, ".");
 		strcat(_string, assetsPackFileExtension);
 		
@@ -154,14 +152,14 @@ int main(int argc, char* argv[])
 			
 			if(_fileInputStream->good())
 			{
-				while(std::getline(*_fileInputStream, *_line))
+				while(_fileInputStream->getline(_string, 1024))
 				{
-					if(*_line == "")
+					if(memcmp(&_string[0], "\r", 1) == 0)
 					{
 						break;
 					}
 					
-					sscanf(_line->c_str(), "%s | %s | %I64u | %I64u", &_type, &_name, &_position, &_size);
+					sscanf(_string, "%s | %s | %I64u | %I64u", &_type, &_name, &_position, &_size);
 					
 					for (std::vector<Asset>::iterator it = assets.begin(); it != assets.end();)
 					{
@@ -191,7 +189,10 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
-	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".1", std::ios::binary);
+	strcpy(_string, assetsPackFileName);
+	strcat(_string, assetFileCountString);
+	strcat(_string, ".1");
+	_fileOutputStream->open(_string, std::ios::binary);
 	
 	if(_fileOutputStream->good())
 	{
@@ -210,8 +211,10 @@ int main(int argc, char* argv[])
 	
 	_fileOutputStream->close();
 	
-	
-	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".2", std::ios::binary);
+	strcpy(_string, assetsPackFileName);
+	strcat(_string, assetFileCountString);
+	strcat(_string, ".2");
+	_fileOutputStream->open(_string, std::ios::binary);
 	
 	if(_fileOutputStream->good())
 	{
@@ -234,12 +237,18 @@ int main(int argc, char* argv[])
 	
 	_fileOutputStream->close();
 	
-	_fileOutputStream->open(assetsPackFileName + std::to_string(assetFileCount) +
-								"." + assetsPackFileExtension);
+	strcpy(_string, assetsPackFileName);
+	strcat(_string, assetFileCountString);
+	strcat(_string, ".");
+	strcat(_string, assetsPackFileExtension);
+	_fileOutputStream->open(_string, std::ios::binary);
 	
 	if(_fileOutputStream->good())
 	{
-		_fileInputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".2", std::ios::binary);
+		strcpy(_string, assetsPackFileName);
+		strcat(_string, assetFileCountString);
+		strcat(_string, ".2");
+		_fileInputStream->open(_string, std::ios::binary);
 			
 		if(_fileInputStream->good())
 		{
@@ -248,7 +257,10 @@ int main(int argc, char* argv[])
 			_fileInputStream->close();
 		}
 		
-		_fileInputStream->open(assetsPackFileName + std::to_string(assetFileCount) + ".1", std::ios::binary);
+		strcpy(_string, assetsPackFileName);
+		strcat(_string, assetFileCountString);
+		strcat(_string, ".1");
+		_fileInputStream->open(_string, std::ios::binary);
 			
 		if(_fileInputStream->good())
 		{
@@ -263,16 +275,14 @@ int main(int argc, char* argv[])
 	
 	_fileOutputStream->close();
 	
-	sprintf(_assetFileCount, "%I64u", assetFileCount);
 	strcpy(_string, assetsPackFileName);
-	strcat(_string, _assetFileCount);
+	strcat(_string, assetFileCountString);
 	strcat(_string, ".1");
 	
 	DeleteFile(_string);
 	
-	sprintf(_assetFileCount, "%I64u", assetFileCount);
 	strcpy(_string, assetsPackFileName);
-	strcat(_string, _assetFileCount);
+	strcat(_string, assetFileCountString);
 	strcat(_string, ".2");
 	
 	DeleteFile(_string);
