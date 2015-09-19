@@ -45,6 +45,36 @@ int main(int argc, char* argv[])
 		strcpy(assetsPath, argv[1]);
 		strcpy(assetsPackFileName, argv[2]);
 		strcpy(assetsPackFileExtension, argv[3]);
+		
+		for(uint64 i = 0; assetsPackFileName[i] != '\0';)
+		{
+			if (!isalpha(assetsPackFileName[i]))
+			{
+				for (uint64 j = i; assetsPackFileName[j] != '\0'; ++j)
+				{
+					assetsPackFileName[j] = assetsPackFileName[j+1];
+				}
+			}
+			else
+			{
+				++i;
+			}
+		}
+		
+		for(uint64 i = 0; assetsPackFileExtension[i] != '\0';)
+		{
+			if (!isalpha(assetsPackFileExtension[i]))
+			{
+				for (uint64 j = i; assetsPackFileExtension[j] != '\0'; ++j)
+				{
+					assetsPackFileExtension[j] = assetsPackFileExtension[j+1];
+				}
+			}
+			else
+			{
+				++i;
+			}
+		}
 	}
 	
 	if(!PathFileExists(assetsPath))
@@ -91,7 +121,7 @@ int main(int argc, char* argv[])
 		
 		for(uint64 j = 0; j < sizeof(assetTypes[i].path); ++j)
 		{
-			if(memcmp(&assetTypes[i].path[j], "*", 1) == 0)
+			if(assetTypes[i].path[j] == '*')
 			{
 				memcpy(&assetTypes[i].path[j], "\0", 1);
 				break;
@@ -118,7 +148,7 @@ int main(int argc, char* argv[])
 				
 				for(uint64 j = 0; j < sizeof(assets[assets.size() - 1].name); ++j)
 				{
-					if(memcmp(&assets[assets.size() - 1].name[j], ".", 1) == 0)
+					if(assets[assets.size() - 1].name[j] == '.')
 					{
 						memcpy(&assets[assets.size() - 1].name[j], "\0", 1);
 						break;
@@ -154,7 +184,7 @@ int main(int argc, char* argv[])
 			{
 				while(_fileInputStream->getline(_string, 1024))
 				{
-					if(memcmp(&_string[0], "\r", 1) == 0)
+					if(_string[0] == '\r')
 					{
 						break;
 					}
