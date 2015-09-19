@@ -38,7 +38,6 @@ int PathOrFileExists(char* path_, bool isFolder_)
 			{
 				return true;
 			}
-			
 		}
 	}
 

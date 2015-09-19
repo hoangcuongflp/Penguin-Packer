@@ -22,4 +22,4 @@ Compile and put the resulting executable file alongside a folder called */assets
 Run the executable and an *assetsX.pepa* file will be generated. If an asset file already exists, the program will create another one only with assets that are not present there.
 
 ## License
-The MIT License (MIT), see LICENSE file for more.
+Penguin Packer is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License, see LICENSE file for more.
