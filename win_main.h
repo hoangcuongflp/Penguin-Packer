@@ -1,7 +1,7 @@
 /*
 MOTHER OF ALL TO-DOs
 - TODO-9(ZET): Address repeated filenames
-- TODO-9(ZET): Add argument check for output file destination
+- TODO-9(ZET): Save file extensions
 */
 
 #pragma once

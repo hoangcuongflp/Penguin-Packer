@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
 	char					assetsPath[512];
 	char					assetsPackFileName[256];
 	char					assetsPackFileExtension[16];
+	char					assetsPackFileDestinationPath[512];
 	
 	uint64					assetInfoFileSize = 0;
 	uint64 					lastAssetPosition = 0;
@@ -29,22 +30,62 @@ int main(int argc, char* argv[])
 	std::ifstream*			_fileInputStream = new std::ifstream();
 	
 	
-	printf("Penguin Packer v0.1 by Jose Carlos Candido (@Zetsaika)\n");
-	printf("- Usage: penguinpacker {asset folder location} {outfile name} {outfile extension}\n\n");
+	printf("\nPenguin Packer v0.1 by Jose Carlos Candido (@Zetsaika)\n");
+	printf("- Usage: penguinpacker {asset folder location} {outfile name} {outfile extension} {outfile destination}\n\n");
 	
-	if(argc < 4)
+	if(argc > 5)
 	{
-		printf("Not all arguments were detected, using defaults.\n\n");
-		
-		strcpy(assetsPath, "assets");
-		strcpy(assetsPackFileName, "assets");
-		strcpy(assetsPackFileExtension, "pepa");
+		printf("ERROR: Too many arguments!\n");
+		return 0;
 	}
 	else
 	{
-		strcpy(assetsPath, argv[1]);
-		strcpy(assetsPackFileName, argv[2]);
-		strcpy(assetsPackFileExtension, argv[3]);
+		if(argc < 5)
+		{
+			printf("Not all arguments were detected, using defaults for those missing.\n\n");
+		}
+		
+		if(argv[1] != 0)
+		{
+			strcpy(assetsPath, argv[1]);
+			
+			if(argv[2] != 0)
+			{
+				strcpy(assetsPackFileName, argv[2]);
+				
+				if(argv[3] != 0)
+				{
+					strcpy(assetsPackFileExtension, argv[3]);
+					
+					if(argv[4] != 0)
+					{
+						strcpy(assetsPackFileDestinationPath, argv[4]);
+					}
+					else
+					{
+						strcpy(assetsPackFileDestinationPath, "\0");
+					}
+				}
+				else
+				{
+					strcpy(assetsPackFileExtension, "pepa");
+					strcpy(assetsPackFileDestinationPath, "\0");
+				}
+			}
+			else
+			{
+				strcpy(assetsPackFileName, "assets");
+				strcpy(assetsPackFileExtension, "pepa");
+				strcpy(assetsPackFileDestinationPath, "\0");
+			}
+		}
+		else
+		{
+			strcpy(assetsPath, "assets");
+			strcpy(assetsPackFileName, "assets");
+			strcpy(assetsPackFileExtension, "pepa");
+			strcpy(assetsPackFileDestinationPath, "\0");
+		}
 		
 		for(uint64 i = 0; assetsPackFileName[i] != '\0';)
 		{
@@ -75,11 +116,30 @@ int main(int argc, char* argv[])
 				++i;
 			}
 		}
+		printf("{asset folder location} = %s;\n", assetsPath); 
+		printf("{outfile name} = %s;\n", assetsPackFileName); 
+		printf("{outfile extension} = %s;\n", assetsPackFileExtension); 
+		
+		
+		if(assetsPackFileDestinationPath[0] != '\0')
+		{
+			printf("{outfile destination} = %s;\n\n", assetsPackFileDestinationPath);
+		}
+		else
+		{
+			printf("{outfile destination} = current location;\n\n");
+		}
 	}
 	
 	if(!PathOrFileExists(assetsPath, true))
 	{
-		printf("ERROR: Specified asset folder found!\n");
+		printf("ERROR: Specified asset folder not found!\n");
+		return 0;
+	}
+	else if(assetsPackFileDestinationPath[0] != '\0' &&
+			!PathOrFileExists(assetsPackFileDestinationPath, true))
+	{
+		printf("ERROR: Specified asset destination folder not found!\n");
 		return 0;
 	}
 	
@@ -89,6 +149,7 @@ int main(int argc, char* argv[])
 	strcat(_string, "\\*");
 	_find = FindFirstFile(_string, &_findData);
 	
+	printf("Processing folders:\n");
 	while(FindNextFile(_find, &_findData) != 0)
 	{
 		if(_findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -106,14 +167,20 @@ int main(int argc, char* argv[])
 			strcat(assetTypes[assetTypes.size() - 1].path, "\\");
 			strcat(assetTypes[assetTypes.size() - 1].path, _findData.cFileName);
 			strcat(assetTypes[assetTypes.size() - 1].path, "\\*");
+			
+			printf(" - %s folder processed.\n", _findData.cFileName);
 		}
 	}
+	
+	printf("\n");
 	
 	if(assetTypes.size() <= 0)
 	{
 		printf("ERROR: No folder inside %s found!\n", assetsPath);
 		return 0;
 	}
+	
+	printf("Processing files:\n");
 	
 	for(uint64 i = 0; i < assetTypes.size(); ++i)
 	{
@@ -161,15 +228,29 @@ int main(int argc, char* argv[])
 				strcat(assets[assets.size() - 1].path, _findData.cFileName);
 													
 				lastAssetPosition += assets[assets.size() - 1].size + 1;
+				
+				printf(" - File %s processed.\n", assets[assets.size() - 1].name);
 			}
 		}
 	}
+	
+	printf("\nSearching repeated files:\n");
 	
 	for(;;)
 	{
 		sprintf(assetFileCountString, "%I64u", assetFileCount);
 		
-		strcpy(_string, assetsPackFileName);								
+		if(assetsPackFileDestinationPath[0] != '\0')
+		{
+			strcpy(_string, assetsPackFileDestinationPath);
+			strcat(_string, "\\");
+			strcat(_string, assetsPackFileName);
+		}
+		else
+		{
+			strcpy(_string, assetsPackFileName);
+		}
+										
 		strcat(_string, assetFileCountString);
 		strcat(_string, ".");
 		strcat(_string, assetsPackFileExtension);
@@ -196,6 +277,12 @@ int main(int argc, char* argv[])
 						if(strcmp(it->name, _name) == 0)
 						{
 							it = assets.erase(it);
+							
+							strcpy(_string, assetsPackFileName);								
+							strcat(_string, assetFileCountString);
+							strcat(_string, ".");
+							strcat(_string, assetsPackFileExtension);
+							printf(" - %s already exists in %s.\n", _name, _string);
 						}
 						else
 						{
@@ -215,9 +302,11 @@ int main(int argc, char* argv[])
 	
 	if(assets.size() == 0)
 	{
-		printf("ERROR: No new files found!\n");
+		printf("\nNo new files found!\n\nDone!\n");
 		return 0;
 	}
+	
+	printf(" - No repeated files found.\n\nCreating raw asset pack file.\n");
 	
 	strcpy(_string, assetsPackFileName);
 	strcat(_string, assetFileCountString);
@@ -240,6 +329,8 @@ int main(int argc, char* argv[])
 	}
 	
 	_fileOutputStream->close();
+	
+	printf("Creating asset pack info file.\n");
 	
 	strcpy(_string, assetsPackFileName);
 	strcat(_string, assetFileCountString);
@@ -267,7 +358,19 @@ int main(int argc, char* argv[])
 	
 	_fileOutputStream->close();
 	
-	strcpy(_string, assetsPackFileName);
+	printf("Creating asset pack file.\n");
+	
+	if(assetsPackFileDestinationPath[0] != '\0')
+	{
+		strcpy(_string, assetsPackFileDestinationPath);
+		strcat(_string, "\\");
+		strcat(_string, assetsPackFileName);
+	}
+	else
+	{
+		strcpy(_string, assetsPackFileName);
+	}
+	
 	strcat(_string, assetFileCountString);
 	strcat(_string, ".");
 	strcat(_string, assetsPackFileExtension);
@@ -317,6 +420,7 @@ int main(int argc, char* argv[])
 	
 	DeleteFile(_string);
 	
+	printf("Done!\n");
 	
     return 0;
 }
