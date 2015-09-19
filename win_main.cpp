@@ -213,15 +213,6 @@ int main(int argc, char* argv[])
 				
 				strcpy(assets[assets.size() - 1].name, _findData.cFileName);
 				
-				for(uint64 j = 0; j < sizeof(assets[assets.size() - 1].name); ++j)
-				{
-					if(assets[assets.size() - 1].name[j] == '.')
-					{
-						memcpy(&assets[assets.size() - 1].name[j], "\0", 1);
-						break;
-					}
-				}
-				
 				for (std::vector<Asset>::iterator it = assets.begin(); it != assets.end(); ++it)
 				{
 					if(&it->name != &assets[assets.size() - 1].name && 
@@ -235,7 +226,7 @@ int main(int argc, char* argv[])
 				assets[assets.size() - 1].type = assetTypes[i];
 													
 				strcpy(assets[assets.size() - 1].path, assets[assets.size() - 1].type.path);				
-				strcat(assets[assets.size() - 1].path, _findData.cFileName);
+				strcat(assets[assets.size() - 1].path, assets[assets.size() - 1].name);
 													
 				lastAssetPosition += assets[assets.size() - 1].size + 1;
 				

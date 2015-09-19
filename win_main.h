@@ -1,8 +1,3 @@
-/*
-MOTHER OF ALL TO-DOs
-- TODO-9(ZET): Save file extensions
-*/
-
 #pragma once
 
 #include <windows.h>
