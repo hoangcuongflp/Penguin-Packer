@@ -116,6 +116,7 @@ int main(int argc, char* argv[])
 				++i;
 			}
 		}
+		
 		printf("{asset folder location} = %s;\n", assetsPath); 
 		printf("{outfile name} = %s;\n", assetsPackFileName); 
 		printf("{outfile extension} = %s;\n", assetsPackFileExtension); 

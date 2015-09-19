@@ -29,10 +29,22 @@ Penguin Packer takes up to 4 arguments, if any is missing the defaults for those
 
 4. *{outfile destination}* = Destination of the output pack file. Default = executable folder.
 
-
 Example usage: `penguinpacker "Y:\Game\assets" assets pack  "Y:\Game\build"`
 
 This will read folders inside "Y:\Game\assets" to make an asset pack file name assets.pack at "Y:\Game\build".
+
+If a asset pack file already exists at destination, the program will make a new file using only files that are not in it.
+
+## Reading the file
+The resulting file is formated in a simple way. The first lines give information about every asset and the rest of the file is their data. Example info lines:
+
+```
+type(subfolder the file was in) | file name with extension | file first byte in the file | file size
+image | v42.png | 502520 | 502519
+text | a.txt | 1005040 | 9
+```
+
+A blank line is inserted after all info lines so the reading program can know when to stop.
 
 ## License
 Penguin Packer is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License, see LICENSE file for more.
