@@ -30,7 +30,7 @@ Penguin Packer takes up to 4 arguments, if any is missing the defaults for those
 4. *{outfile destination}* = Destination of the output pack file. Default = executable folder.
 
 
-Example usage: penguinpacker "Y:\Game\assets" assets pack  "Y:\Game\build"
+Example usage: `penguinpacker "Y:\Game\assets" assets pack  "Y:\Game\build"`
 
 This will read folders inside "Y:\Game\assets" to make an asset pack file name assets.pack at "Y:\Game\build".
 
