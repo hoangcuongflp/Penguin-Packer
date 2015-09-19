@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	
 	uint64					assetInfoFileSize = 0;
 	uint64 					lastAssetPosition = 0;
-	
+
 	char					_string[1024];
 	HANDLE					_find;
 	WIN32_FIND_DATA 		_findData;
@@ -219,6 +219,16 @@ int main(int argc, char* argv[])
 					{
 						memcpy(&assets[assets.size() - 1].name[j], "\0", 1);
 						break;
+					}
+				}
+				
+				for (std::vector<Asset>::iterator it = assets.begin(); it != assets.end(); ++it)
+				{
+					if(&it->name != &assets[assets.size() - 1].name && 
+							strcmp(it->name, assets[assets.size() - 1].name) == 0)
+					{
+						printf("\nERROR: Filename %s repeated\n", it->name);
+						return 0;
 					}
 				}
 				
