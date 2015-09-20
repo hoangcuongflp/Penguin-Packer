@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
 						break;
 					}
 					
-					sscanf(_string, "%s | %s | %I64u | %I64u", &_type, &_name, &_position, &_size);
+					sscanf(_string, "%511s | %511s | %I64u | %I64u", &_type, &_name, &_position, &_size);
 					
 					for (std::vector<Asset>::iterator it = assets.begin(); it != assets.end();)
 					{
