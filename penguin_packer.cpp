@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
 				strcpy(assets[assets.size() - 1].path, assets[assets.size() - 1].type.path);				
 				strcat(assets[assets.size() - 1].path, assets[assets.size() - 1].name);
 													
-				lastAssetPosition += assets[assets.size() - 1].size + 1;
+				lastAssetPosition += assets[assets.size() - 1].size;
 				
 				printf(" - File %s processed.\n", assets[assets.size() - 1].name);
 			}
