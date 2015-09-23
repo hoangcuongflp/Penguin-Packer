@@ -39,12 +39,14 @@ If a asset pack file already exists at destination, the program will make a new 
 The resulting file is formated in a simple way. The first lines give information about every asset and the rest of the file is their data. Example info lines:
 
 ```
-type(subfolder the file was in) | file name with extension | file first byte in the file | file size
+type(subfolder the file was in) | file name with extension | file position without offset | file size
 image | v42.png | 502520 | 502519
 text | a.txt | 1005040 | 9
 ```
 
-A blank line is inserted after all info lines so the reading program can know when to stop.
+A blank line is inserted after all information lines so the reading program can know when to stop.
+
+The last line of the file will be an offset number that should be added to every file position. This numbers represents the size of the information lines.
 
 ## License
 Penguin Packer is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License, see LICENSE file for more.
