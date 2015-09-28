@@ -24,7 +24,7 @@ struct Asset
 	AssetType	type;
 };
 
-int PathOrFileExists(char* path_, bool isFolder_)
+bool PathOrFileExists(char* path_, bool isFolder_)
 {
 	if(path_[0] != '\0')
 	{
